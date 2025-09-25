@@ -6,6 +6,12 @@ import { ChartView } from "@/components/ui/chart-view";
 import { Filters } from "@/components/ui/filters";
 import { DataPagination } from "@/components/ui/data-pagination";
 import { useTheme } from "@/components/theme-provider";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { 
   Database, 
   RefreshCw, 
@@ -14,8 +20,7 @@ import {
   Table as TableIcon, 
   BarChart3, 
   Download,
-  FileSpreadsheet,
-  FileText,
+  ChevronDown,
 } from "lucide-react";
 import { mockData, type DataRecord } from "@/data/mockData";
 import { exportToCSV, exportToExcel, exportToPDF } from "@/utils/exportUtils";
@@ -29,9 +34,6 @@ export default function Dashboard() {
   const [viewMode, setViewMode] = useState<'table' | 'chart'>('table');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedModule, setSelectedModule] = useState('All Modules');
-  const [selectedStatus, setSelectedStatus] = useState('All Status');
-  const [dateFrom, setDateFrom] = useState<Date>();
-  const [dateTo, setDateTo] = useState<Date>();
   const [sortColumn, setSortColumn] = useState<keyof DataRecord>('invoice_date');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [currentPage, setCurrentPage] = useState(1);
@@ -56,21 +58,6 @@ export default function Dashboard() {
         return false;
       }
 
-      // Status filter
-      if (selectedStatus !== 'All Status' && record.status !== selectedStatus) {
-        return false;
-      }
-
-      // Date filters
-      if (dateFrom) {
-        const recordDate = new Date(record.invoice_date);
-        if (recordDate < dateFrom) return false;
-      }
-      if (dateTo) {
-        const recordDate = new Date(record.invoice_date);
-        if (recordDate > dateTo) return false;
-      }
-
       return true;
     });
 
@@ -91,7 +78,7 @@ export default function Dashboard() {
     });
 
     return filtered;
-  }, [mockData, searchTerm, selectedModule, selectedStatus, dateFrom, dateTo, sortColumn, sortDirection]);
+  }, [mockData, searchTerm, selectedModule, sortColumn, sortDirection]);
 
   // Pagination
   const totalPages = Math.ceil(filteredAndSortedData.length / pageSize);
@@ -104,9 +91,6 @@ export default function Dashboard() {
   const activeFiltersCount = [
     searchTerm,
     selectedModule !== 'All Modules' ? selectedModule : null,
-    selectedStatus !== 'All Status' ? selectedStatus : null,
-    dateFrom,
-    dateTo,
   ].filter(Boolean).length;
 
   // Handlers
@@ -119,9 +103,6 @@ export default function Dashboard() {
   const handleClearFilters = () => {
     setSearchTerm('');
     setSelectedModule('All Modules');
-    setSelectedStatus('All Status');
-    setDateFrom(undefined);
-    setDateTo(undefined);
     setCurrentPage(1);
   };
 
@@ -218,12 +199,6 @@ export default function Dashboard() {
               onSearchChange={setSearchTerm}
               selectedModule={selectedModule}
               onModuleChange={setSelectedModule}
-              selectedStatus={selectedStatus}
-              onStatusChange={setSelectedStatus}
-              dateFrom={dateFrom}
-              dateTo={dateTo}
-              onDateFromChange={setDateFrom}
-              onDateToChange={setDateTo}
               onClearFilters={handleClearFilters}
             />
           </CardHeader>
@@ -250,20 +225,35 @@ export default function Dashboard() {
             </Button>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => handleExport('csv')}>
-              <Download className="h-4 w-4 mr-2" />
-              CSV
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => handleExport('excel')}>
-              <FileSpreadsheet className="h-4 w-4 mr-2" />
-              Excel
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => handleExport('pdf')}>
-              <FileText className="h-4 w-4 mr-2" />
-              PDF
-            </Button>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                Exporting
+                <ChevronDown className="h-4 w-4 ml-2" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="bg-popover border-border">
+              <DropdownMenuItem 
+                onClick={() => handleExport('csv')}
+                className="hover:bg-accent cursor-pointer"
+              >
+                CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => handleExport('excel')}
+                className="hover:bg-accent cursor-pointer"
+              >
+                Excel
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => handleExport('pdf')}
+                className="hover:bg-accent cursor-pointer"
+              >
+                PDF
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Main Content */}

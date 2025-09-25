@@ -14,23 +14,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, Search, Filter, Plus } from "lucide-react";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import { moduleOptions, statusOptions } from "@/data/mockData";
+import { Search, Filter } from "lucide-react";
+import { moduleOptions } from "@/data/mockData";
 
 interface FiltersProps {
   searchTerm: string;
   onSearchChange: (term: string) => void;
   selectedModule: string;
   onModuleChange: (module: string) => void;
-  selectedStatus: string;
-  onStatusChange: (status: string) => void;
-  dateFrom?: Date;
-  dateTo?: Date;
-  onDateFromChange: (date?: Date) => void;
-  onDateToChange: (date?: Date) => void;
   onClearFilters: () => void;
 }
 
@@ -39,20 +30,11 @@ export function Filters({
   onSearchChange,
   selectedModule,
   onModuleChange,
-  selectedStatus,
-  onStatusChange,
-  dateFrom,
-  dateTo,
-  onDateFromChange,
-  onDateToChange,
   onClearFilters,
 }: FiltersProps) {
   const hasActiveFilters = 
     searchTerm ||
-    selectedModule !== 'All Modules' ||
-    selectedStatus !== 'All Status' ||
-    dateFrom ||
-    dateTo;
+    selectedModule !== 'All Modules';
 
   return (
     <div className="space-y-4">
@@ -93,104 +75,18 @@ export function Filters({
         </div>
       </div>
 
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h4 className="text-sm font-medium text-card-foreground">Additional Filters</h4>
+      {hasActiveFilters && (
+        <div className="flex justify-end">
           <Button 
-            variant="outline" 
-            size="sm"
-            className="text-primary border-primary hover:bg-primary hover:text-primary-foreground"
+            variant="ghost" 
+            size="sm" 
+            onClick={onClearFilters}
+            className="text-muted-foreground hover:text-foreground"
           >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Filter
+            Clear all filters
           </Button>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label className="text-card-foreground">Status</Label>
-            <Select value={selectedStatus} onValueChange={onStatusChange}>
-              <SelectTrigger className="bg-background border-border">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent className="bg-popover border-border">
-                {statusOptions.map((status) => (
-                  <SelectItem key={status} value={status} className="hover:bg-accent">
-                    {status}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-card-foreground">Date From</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal bg-background border-border",
-                    !dateFrom && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {dateFrom ? format(dateFrom, "PPP") : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-popover border-border" align="start">
-                <Calendar
-                  mode="single"
-                  selected={dateFrom}
-                  onSelect={onDateFromChange}
-                  initialFocus
-                  className="p-3 pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-card-foreground">Date To</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal bg-background border-border",
-                    !dateTo && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {dateTo ? format(dateTo, "PPP") : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-popover border-border" align="start">
-                <Calendar
-                  mode="single"
-                  selected={dateTo}
-                  onSelect={onDateToChange}
-                  initialFocus
-                  className="p-3 pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-        </div>
-
-        {hasActiveFilters && (
-          <div className="flex justify-end">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={onClearFilters}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Clear all filters
-            </Button>
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 }
